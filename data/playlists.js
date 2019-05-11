@@ -73,7 +73,8 @@ module.exports = {
                         listOfSongs:{
                             id: songID,
                             title: data.name,
-                            artist: data.artists.name,
+                            artist: data.artists[0].name,
+                            album: data.album.name,
                             length: data.duration_ms,
                             inPlaylist: true
                         }
