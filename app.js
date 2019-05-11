@@ -16,7 +16,6 @@ var cookieParser = require('cookie-parser');
 var Spotify = require('node-spotify-api');
 
 const playlistData = require("./data/playlists");
-const userData = require("./data/users");
 const static = express.static(__dirname + "/public");
 
 var client_id = '17e499e229ab45c7be7aaf03dd42b9b0'; // Your client id
@@ -118,15 +117,9 @@ app.get('/callback', function(req, res) {
         };
 
         // use the access token to access the Spotify Web API
-        request.get(options, async function(error, response, body) {
+        request.get(options, function(error, response, body) {
           console.log(body);
           userID = body.id;
-          name = body.display_name;
-          email = body.email;
-          if (!await userData.find(userID)){
-            let newUser = await userData.create(userID, name, email);
-            console.log(newUser);
-          }
         });
 
         // we can also pass the token to the browser to make requests from there
@@ -150,20 +143,67 @@ app.get('/choices', function(req, res) {
   res.render('playlists/playlists', {layout: "main"});
 })
 //GETTING PLAYLISTS OF A USER ----------------------------------------------------------------------------------------------------------
-// var playlists = null;
-// app.get('/playlists', function (req, res) {
+var tracks = [];
+app.get('/playlists', function (req, res) {
 
-//   spotify
-//     .request('https://api.spotify.com/v1/users/' + userID + '/playlists')
-//     .then(function(data) {
-//     res.json(data);
-//   })
-//   .catch(function(err) {
-//     console.error('Error occurred: ' + err); 
-//   });
-// })
+  spotify
+    .request('https://api.spotify.com/v1/users/' + userID + '/playlists')
+    .then(function(data) {
+      console.log(data);
+      let simplifiedInfo = [];
+      for(i = 0; i < data.items.length; i++){
+        let temp = {
+          name: data.items[i].name,
+          id: data.items[i].id,
+          owner: {
+            display_name: data.items[i].owner.display_name,
+            id: data.items[i].owner.id
+          },
+          public: data.items[i].public,
+          total_tracks: data.items[i].tracks.total
+        };
+
+        tracks.push(temp.id);
+        simplifiedInfo.push(temp);
+      }
+    res.render('playlists/spotifyList', {
+      simplifiedInfo: simplifiedInfo
+    })
+  })
+  .catch(function(err) {
+    console.error('Error occurred: ' + err); 
+  });
+})
 //--------------------------------------------------------------------------------------------------------------------------------------
 
+//GETTING TRACKS OF A PLAYLIST----------------------------------------------------------------------------------------------------------
+app.get('/trackInfo/:id', function(req,res){
+  var id = req.params.id;
+  
+  spotify
+    .request('https://api.spotify.com/v1/playlists/' + id + '/tracks')
+    .then(function(data){
+      let simplifiedInfo = [];
+      for(i = 0; i < data.items.length; i++) {
+        let temp = {
+          name: data.items[i].track.name,
+          artist: data.items[i].track.album.artists[0].name,
+          album: data.items[i].track.album.name,
+          length: data.items[i].track.duration_ms
+        };
+
+        simplifiedInfo.push(temp);
+      }
+      res.render('playlists/trackInfo', {
+        simplifiedInfo: simplifiedInfo
+      })
+    })
+    .catch(function(err) {
+      console.error('Error occurred: ' + err); 
+    });
+})
+
+//--------------------------------------------------------------------------------------------------------------------------------------
 app.get('/create', function(req, res) {
   res.render('playlists/form');
 })
@@ -175,8 +215,6 @@ app.post('/list', async function(req, res) {
 
   let newPlaylist = await playlistData.create(title, genre, tags);
   console.log(newPlaylist);
-  let updatedUser = await userData.addPlaylist(userID, newPlaylist._id);
-  console.log(updatedUser);
 
   res.render('playlists/listedPlaylists', {
     title: newPlaylist.title,
