@@ -40,6 +40,18 @@ module.exports = {
         const playlist = await this.get(newId);
         return playlist;
     },
+    async remove(id) {
+        if (!id) throw "Please provide a valid ID to search";
+
+        const playlistCollection = await playlists();
+        const playlist = await this.get(id);
+
+        const deletionInfo = await playlistCollection.removeOne({_id: id });
+        if (deletionInfo.deletedCount === 0) {
+            throw "Could not delete playlist";
+        }
+        return {deleted : true, data : playlist};
+    },
     async get(id) {
         if (!id) throw "Please provide a valid ID to search";
 
@@ -55,7 +67,7 @@ module.exports = {
         const playlistCollection = await playlists();
         let playlist = this.get(playlistID);
         spotify.request('https://api.spotify.com/v1/tracks/' + songID)
-            .then(function(data) {
+            .then(async function(data) {
                 playlistCollection.updateOne({_id : playlistID}, {
                     $addToSet: {
                         listOfSongs:{
@@ -88,7 +100,7 @@ module.exports = {
         const playlistCollection = await playlists();
         let playlist = this.get(playlistID);
         spotify.request('https://api.spotify.com/v1/tracks/' + songID)
-            .then(function(data) {
+            .then(async function(data) {
                 playlistCollection.updateOne({_id : playlistID}, {
                     $pull: {
                         listOfSongs:{
