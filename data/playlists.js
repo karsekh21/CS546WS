@@ -65,10 +65,10 @@ module.exports = {
     },
     async addSong(songID, playlistID) {
         const playlistCollection = await playlists();
-        let playlist = this.get(playlistID);
+        let playlist = await this.get(playlistID);
         spotify.request('https://api.spotify.com/v1/tracks/' + songID)
             .then(async function(data) {
-                playlistCollection.updateOne({_id : playlistID}, {
+                await playlistCollection.updateOne({_id : playlistID}, {
                     $addToSet: {
                         listOfSongs:{
                             id: songID,
@@ -98,10 +98,10 @@ module.exports = {
     },
     async deleteSong(songID, playlistID){
         const playlistCollection = await playlists();
-        let playlist = this.get(playlistID);
+        let playlist = await this.get(playlistID);
         spotify.request('https://api.spotify.com/v1/tracks/' + songID)
             .then(async function(data) {
-                playlistCollection.updateOne({_id : playlistID}, {
+                await playlistCollection.updateOne({_id : playlistID}, {
                     $pull: {
                         listOfSongs:{
                             id: songID
