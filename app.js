@@ -16,6 +16,7 @@ var cookieParser = require('cookie-parser');
 var Spotify = require('node-spotify-api');
 
 const playlistData = require("./data/playlists");
+const userData = require("./data/users");
 const static = express.static(__dirname + "/public");
 
 var client_id = '17e499e229ab45c7be7aaf03dd42b9b0'; // Your client id
@@ -117,9 +118,15 @@ app.get('/callback', function(req, res) {
         };
 
         // use the access token to access the Spotify Web API
-        request.get(options, function(error, response, body) {
+        request.get(options, async function(error, response, body) {
           console.log(body);
           userID = body.id;
+          name = body.display_name;
+          email = body.email;
+          if (!await userData.find(userID)){
+            let newUser = await userData.create(userID, name, email);
+            console.log(newUser);
+          }
         });
 
         // we can also pass the token to the browser to make requests from there
@@ -168,6 +175,8 @@ app.post('/list', async function(req, res) {
 
   let newPlaylist = await playlistData.create(title, genre, tags);
   console.log(newPlaylist);
+  let updatedUser = await userData.addPlaylist(userID, newPlaylist._id);
+  console.log(updatedUser);
 
   res.render('playlists/listedPlaylists', {
     title: newPlaylist.title,

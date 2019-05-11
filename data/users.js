@@ -1,6 +1,5 @@
 const mongoCollections = require("./../Config/mongoCollections");
 const users = mongoCollections.users;
-const playlistData = ("./playlists");
 
 module.exports = {
     async create(id, name, email){
