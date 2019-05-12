@@ -1,7 +1,9 @@
 const mongoCollections = require("./../Config/mongoCollections");
 const users = mongoCollections.users;
 
+//Functions to manage the users in our database
 module.exports = {
+    //method to create user
     async create(id, name, email){
         if (typeof id !== "string"){
             throw "Please provide a valid id";
@@ -32,6 +34,7 @@ module.exports = {
         return user;
 
     },
+    //method to determine if user exists. if user does not exist, the routes will create a new user
     async find(id){
         if (!id) throw "Please provide a valid ID to search";
 
@@ -42,6 +45,7 @@ module.exports = {
         }
         return true;
     },
+    //method to get user and return the desired user object
     async get(id){
         if (!id) throw "Please provide a valid ID to search";
 
@@ -53,26 +57,12 @@ module.exports = {
 
         return user;
     },
+    //method to add a playlist to a user
     async addPlaylist(userID, playlistID){
         const userCollection = await users();
         // let user = await this.get(userID);
         const updateInfo = await userCollection.updateOne({id : userID}, {
             $addToSet: {
-                listOfPlaylists: playlistID
-            }
-        });
-    
-        if (updateInfo.modifiedCount === 0) {
-            throw "could not update user successfully";
-        }
-
-        return await this.get(userID);
-    },
-    async deletePlaylist(userID, playlistID){
-        const userCollection = await users();
-        // let user = await this.get(userID);
-        const updateInfo = await userCollection.updateOne({id : userID}, {
-            $pull: {
                 listOfPlaylists: playlistID
             }
         });

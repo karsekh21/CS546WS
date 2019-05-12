@@ -1,14 +1,10 @@
+    
 /**
- * This is an example of a basic node.js script that performs
- * the Authorization Code oAuth2 flow to authenticate against
- * the Spotify Accounts.
- *
- * For more information, read
- * https://developer.spotify.com/web-api/authorization-guide/#authorization_code_flow
+ * The main portion of our application. We kept all the routes here, since the Spotify login API examples were written here.
  */
 
-var express = require('express'); // Express web server framework
-var request = require('request'); // "Request" library
+var express = require('express'); 
+var request = require('request');
 var bodyParser = require('body-parser');
 var cors = require('cors');
 var querystring = require('querystring');
@@ -19,18 +15,20 @@ const playlistData = require("./data/playlists");
 const userData = require("./data/users");
 const static = express.static(__dirname + "/public");
 
-var client_id = '17e499e229ab45c7be7aaf03dd42b9b0'; // Your client id
-var client_secret = '32b5efbcbecb41d09a41c5f953030444'; // Your secret
-var redirect_uri = 'http://localhost:3000/callback'; // Your redirect uri
+var client_id = '17e499e229ab45c7be7aaf03dd42b9b0'; // application client id
+var client_secret = '32b5efbcbecb41d09a41c5f953030444'; // application secret
+var redirect_uri = 'http://localhost:3000/callback'; // application redirect uri
 var spotify = new Spotify({
   id: client_id,
   secret: client_secret
 })
 var userID = null;
+
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
  * @return {string} The generated string
+ * used for authentication and login
  */
 var generateRandomString = function(length) {
   var text = '';
@@ -42,6 +40,7 @@ var generateRandomString = function(length) {
   return text;
 };
 
+//used to convert song durations from milliseconds to minutes:seconds
 var lengthConversion = function(ms) {
   var min = Math.floor(ms / 60000);
   var sec = ((ms % 60000) / 1000).toFixed(0);
@@ -64,13 +63,14 @@ app.set("view engine", "handlebars");
 app.use(express.static(__dirname + '/public'))
    .use(cors())
    .use(cookieParser());
-
+//SPOTIFY LOGIN ------------------------------------------------------------------------------------------------------------------------
+//login portion of the application, after the first login, it will keep you logged in and ask for authorization each time
 app.get('/login', function(req, res) {
 
   var state = generateRandomString(16);
   res.cookie(stateKey, state);
 
-  // your application requests authorization
+  // application requests authorization
   var scope = 'user-read-private user-read-email playlist-read-private';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
@@ -78,13 +78,15 @@ app.get('/login', function(req, res) {
       client_id: client_id,
       scope: scope,
       redirect_uri: redirect_uri,
-      state: state
+      state: state,
+      show_dialog: true
     }));
 });
 
+//keeps application logged in and authorized
 app.get('/callback', function(req, res) {
 
-  // your application requests refresh and access tokens
+  // application requests refresh and access tokens
   // after checking the state parameter
 
   var code = req.query.code || null;
@@ -150,14 +152,31 @@ app.get('/callback', function(req, res) {
     });
   }
 });
+//--------------------------------------------------------------------------------------------------------------------------------------
 
-
+//CHOOSING TO VIEW OR CREATE PLAYLISTS--------------------------------------------------------------------------------------------------
 app.get('/choices', function(req, res) {
   res.render('playlists/playlists', {layout: "main"});
 })
+//--------------------------------------------------------------------------------------------------------------------------------------
+
 //GETTING PLAYLISTS OF A USER ----------------------------------------------------------------------------------------------------------
 var tracks = [];
-app.get('/playlists', function (req, res) {
+app.get('/playlists', async function (req, res) {
+  let someUser = await userData.get(userID);
+  let userPlaylists = [];
+
+  for(i = 0; i < someUser.listOfPlaylists.length; i++) {
+    let temp = someUser.listOfPlaylists[i];
+    let temp2 = await playlistData.get(temp);
+    let temp3 = {
+      id: temp2._id,
+      title: temp2.title,
+      numOfSongs: temp2.numOfSongs,
+      display_name: someUser.name
+    }
+    userPlaylists.push(temp3);
+  }
 
   spotify
     .request('https://api.spotify.com/v1/users/' + userID + '/playlists')
@@ -180,7 +199,8 @@ app.get('/playlists', function (req, res) {
         simplifiedInfo.push(temp);
       }
     res.render('playlists/spotifyList', {
-      simplifiedInfo: simplifiedInfo
+      simplifiedInfo: simplifiedInfo,
+      userPlaylists: userPlaylists,
     })
   })
   .catch(function(err) {
@@ -215,13 +235,104 @@ app.get('/trackInfo/:id', function(req,res){
       console.error('Error occurred: ' + err); 
     });
 })
+//--------------------------------------------------------------------------------------------------------------------------------------
+
+//GETTING TRACKS OF A NON SPOTIFY PLAYLIST----------------------------------------------------------------------------------------------
+var playlistID = null;
+app.get('/trackInfoNonSpotify/:id', async function(req,res){
+  var id = req.params.id;
+  console.log(id);
+  
+  let someUser = await userData.get(userID);
+
+  let temp = someUser.listOfPlaylists[id];
+  playlistID = temp;
+  let playlist = await playlistData.get(temp);
+
+  let songInfo = [];
+  for(i = 0; i < playlist.listOfSongs.length; i++) {
+    let temp2 = {
+      id: playlist.listOfSongs[i].id,
+      title: playlist.listOfSongs[i].title,
+      artist: playlist.listOfSongs[i].artist,
+      album: playlist.listOfSongs[i].album,
+      length: lengthConversion(playlist.listOfSongs[i].length)
+    }
+
+    songInfo.push(temp2);
+  }
+  res.render('playlists/trackInfoNonSpotify', {
+    songInfo: songInfo
+  })
+})
+//--------------------------------------------------------------------------------------------------------------------------------------
+
+//ADDING TRACKS TO A NON SPOTIFY PLAYLIST----------------------------------------------------------------------------------------------
+app.get('/addsongs/:id', async function(req,res){
+  var id = req.params.id;
+
+  spotify
+    .request('https://api.spotify.com/v1/playlists/' + id + '/tracks')
+    .then(function(data){
+      let simplifiedInfo = [];
+      for(i = 0; i < data.items.length; i++) {
+        let temp = {
+          id: data.items[i].track.id,
+          name: data.items[i].track.name,
+          artist: data.items[i].track.album.artists[0].name,
+          album: data.items[i].track.album.name,
+          length: lengthConversion(data.items[i].track.duration_ms)
+        };
+
+        simplifiedInfo.push(temp);
+      }
+      res.render('playlists/addsongs', {
+        simplifiedInfo: simplifiedInfo
+      })
+    })
+    .catch(function(err) {
+      console.error('Error occurred: ' + err); 
+    });
+  
+})
+//--------------------------------------------------------------------------------------------------------------------------------------
+
+//ADDING TRACKS TO A NON SPOTIFY PLAYLIST----------------------------------------------------------------------------------------------
+app.get('/middleman/:id', async function(req,res){
+  var id = req.params.id;
+  
+  let updatedPlaylist = await playlistData.addSong(id, playlistID);
+  console.log(updatedPlaylist);
+
+  res.redirect('/playlists');  
+})
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 
+//CHOOSING PLAYLIST TO ADD SONGS----------------------------------------------------------------------------------------------
+app.get('/between', function(req,res){
+  res.render('playlists/betweenadding');
+})
+
+//--------------------------------------------------------------------------------------------------------------------------------------
+
+//SECTION FOR LITERALLY JUST GOING BACK-------------------------------------------------------------------------------------------------
+app.get('/back2', function(req, res) {
+  res.redirect('/playlists');
+})
+
+app.get('/back3', function(req, res) {
+  res.redirect('/choices');
+})
+//--------------------------------------------------------------------------------------------------------------------------------------
+
+//FORM INPUT FOR PLAYLIST CREATION------------------------------------------------------------------------------------------------------
 app.get('/create', function(req, res) {
   res.render('playlists/form');
 })
+//--------------------------------------------------------------------------------------------------------------------------------------
 
+//POSTING THE CREATED PLAYLIST IN THE DATABASE------------------------------------------------------------------------------------------
 app.post('/list', async function(req, res) {
   var title = req.body.title;
 
@@ -230,14 +341,13 @@ app.post('/list', async function(req, res) {
   let updatedUser = await userData.addPlaylist(userID, newPlaylist._id);
   console.log(updatedUser);
 
-  res.render('playlists/listedPlaylists', {
-    title: newPlaylist.title,
-    id: newPlaylist._id
-  });
+  res.redirect('/playlists');
 })
-app.get('/refresh_token', function(req, res) {
+//--------------------------------------------------------------------------------------------------------------------------------------
 
-  // requesting access token from refresh token
+//SPOTIFY REFRESH TOKEN TO REMAIN LOGGED IN---------------------------------------------------------------------------------------------
+app.get('/refresh_token', function(req, res) {
+    // requesting access token from refresh token
   var refresh_token = req.query.refresh_token;
   var authOptions = {
     url: 'https://accounts.spotify.com/api/token',
@@ -258,6 +368,7 @@ app.get('/refresh_token', function(req, res) {
     }
   });
 });
+//--------------------------------------------------------------------------------------------------------------------------------------
 
 console.log('Listening on 3000');
 app.listen(3000);

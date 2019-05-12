@@ -34,6 +34,17 @@ tr:nth-child(even) {
             <th>{{this.total_tracks}}</th>
         </tr>
         {{/each}}
+        {{#if userPlaylists}}
+          {{#each userPlaylists}}
+          <tr>
+              <th><a href="/trackInfoNonSpotify/{{@index}}">{{this.title}}</a></th>
+              <th>{{this.display_name}}</th>
+              <th>false</th>
+              <th>{{this.numOfSongs}}</th>
+          </tr>
+          {{/each}}
+        {{/if}}
     </table>
     {{/if}}
+    <a href="/back3">BACK TO CHOICES</a>
 </section>

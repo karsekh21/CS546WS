@@ -6,7 +6,9 @@ var spotify = new Spotify({
     secret: '32b5efbcbecb41d09a41c5f953030444'
   });
 
+//functions to manage the playlists in our database
 module.exports = {
+    //method to create a playlist
     async create(title) {
         if (typeof title !== "string"){
             throw "Please provide a valid name";
@@ -32,18 +34,7 @@ module.exports = {
         const playlist = await this.get(newId);
         return playlist;
     },
-    async remove(id) {
-        if (!id) throw "Please provide a valid ID to search";
-
-        const playlistCollection = await playlists();
-        const playlist = await this.get(id);
-
-        const deletionInfo = await playlistCollection.removeOne({_id: id });
-        if (deletionInfo.deletedCount === 0) {
-            throw "Could not delete playlist";
-        }
-        return {deleted : true, data : playlist};
-    },
+    //method to get playlist and return the desired playlist object
     async get(id) {
         if (!id) throw "Please provide a valid ID to search";
 
@@ -55,6 +46,7 @@ module.exports = {
 
         return playlist;
     },
+    //method to add a song to a playlist
     async addSong(songID, playlistID) {
         const playlistCollection = await playlists();
         let playlist = await this.get(playlistID);
@@ -86,35 +78,6 @@ module.exports = {
                     throw "could not update playlist successfully";
                 }
             });
-        return await this.get(playlistID);
-    },
-    async deleteSong(songID, playlistID){
-        const playlistCollection = await playlists();
-        let playlist = await this.get(playlistID);
-        spotify.request('https://api.spotify.com/v1/tracks/' + songID)
-            .then(async function(data) {
-                await playlistCollection.updateOne({_id : playlistID}, {
-                    $pull: {
-                        listOfSongs:{
-                            id: songID
-                        }
-                    }
-                });
-                let updatedInfo = {
-                    numOfSongs: playlist.numOfSongs - 1,
-                    lengthEst: playlist.lengthEst - data.duration_ms
-                };
-
-                let updatedPlaylist = { 
-                    $set: updatedInfo
-                };
-
-                const updateInfo = await playlistCollection.updateOne({_id: id}, updatedPlaylist);
-                if (updateInfo.modifiedCount === 0) {
-                    throw "could not update playlist successfully";
-                }
-        
-                return await this.get(id);
-            });
+            return await this.get(playlistID);
     }
 }
