@@ -42,6 +42,12 @@ var generateRandomString = function(length) {
   return text;
 };
 
+var lengthConversion = function(ms) {
+  var min = Math.floor(ms / 60000);
+  var sec = ((ms % 60000) / 1000).toFixed(0);
+  return (sec == 60 ? (min+1) + ":00" : min + ":" + (sec < 10 ? "0" : "") + sec);
+}
+
 var stateKey = 'spotify_auth_state';
 
 var app = express();
@@ -196,7 +202,7 @@ app.get('/trackInfo/:id', function(req,res){
           name: data.items[i].track.name,
           artist: data.items[i].track.album.artists[0].name,
           album: data.items[i].track.album.name,
-          length: data.items[i].track.duration_ms
+          length: lengthConversion(data.items[i].track.duration_ms)
         };
 
         simplifiedInfo.push(temp);
