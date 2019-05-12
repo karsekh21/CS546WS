@@ -81,13 +81,12 @@ module.exports = {
                     $set: updatedInfo
                 };
 
-                const updateInfo = await playlistCollection.updateOne({_id: id}, updatedPlaylist);
+                const updateInfo = await playlistCollection.updateOne({_id: playlistID}, updatedPlaylist);
                 if (updateInfo.modifiedCount === 0) {
                     throw "could not update playlist successfully";
                 }
-        
-                return await this.get(id);
             });
+        return await this.get(playlistID);
     },
     async deleteSong(songID, playlistID){
         const playlistCollection = await playlists();
