@@ -1,0 +1,39 @@
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+
+<section>
+    <h1>HERE ARE PLAYLISTS PLS WORK</h1>
+    {{#if simplifiedInfo}}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Owner</th>
+            <th>Public</th>
+            <th>Total Tracks</th>
+        </tr>
+        {{#each simplifiedInfo}}
+        <tr>
+            <th><a href="/trackInfo/{{this.id}}">{{this.name}}</a></th>
+            <th>{{this.owner.display_name}}</th>
+            <th>{{this.public}}</th>
+            <th>{{this.total_tracks}}</th>
+        </tr>
+        {{/each}}
+    </table>
+    {{/if}}
+</section>

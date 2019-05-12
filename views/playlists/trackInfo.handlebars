@@ -1,0 +1,39 @@
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+
+<section>
+    <h1>HERE ARE TRACKS IN PLAYLIST PLS WORK</h1>
+    {{#if simplifiedInfo}}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Artist</th>
+            <th>Album</th>
+            <th>Length</th>
+        </tr>
+        {{#each simplifiedInfo}}
+        <tr>
+            <th>{{this.name}}</th>
+            <th>{{this.artist}}</th>
+            <th>{{this.album}}</th>
+            <th>{{this.length}}</th>
+        </tr>
+        {{/each}}
+    </table>
+    {{/if}}
+</section>
