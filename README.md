@@ -15,8 +15,9 @@ __RUNNING THE APPLICATION__
 2) You can either use your own Spotify account, but we have made an account for you
     - Email address:  ksekhar@stevens.edu
     - Password:       cs546project
-3) Upon logging in, you will see your Spotify user data. 
-4) Here you can choose to view playlists or create playlists.
+3) Allow the user to 
+4) Upon logging in, you will see your Spotify user data. 
+5) Here you can choose to view playlists or create playlists.
     - Creating playlists will show a form that will simply ask for the name of the playlist.
         - The user is then redirected to viewing playlists where they can see their newly created playlist
     - Viewing playlists on a newly created user will display the Spotify playlists created by the user as well as the created playlists in the library. 
@@ -27,3 +28,5 @@ __RUNNING THE APPLICATION__
         - From there, you can choose from three song charts that are pulled from Spotify to add songs to your playlist
         - These charts are updated weekly by Spotify, allowing for new music to be searched for every week.
         - Click on the song to add it to the playlist, and then click the playlist to see the newly added song.
+6) To logout, click the "Back to Home" button on the View/Create page. That will take you back to the first page, where it asks you to login again. Click log in and it will ask you for permissions again. There is a link that says "Not you?". Click that to logout.
+    - This is the only way to log out of remote applications using Spotify.
