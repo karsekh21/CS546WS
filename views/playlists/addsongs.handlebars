@@ -17,7 +17,7 @@ tr:nth-child(even) {
 </style>
 
 <section>
-    <h1>HERE ARE TRACKS IN PLAYLIST PLS WORK</h1>
+    <h1>HERE ARE SOME SONGS TO ADD MAYBE IF YOU WANT I'M NOT SURE</h1>
     {{#if simplifiedInfo}}
     <table>
         <tr>
@@ -28,7 +28,7 @@ tr:nth-child(even) {
         </tr>
         {{#each simplifiedInfo}}
         <tr>
-            <th>{{this.name}}</th>
+            <th><a href="/middleman/{{this.id}}">{{this.name}}</a></th>
             <th>{{this.artist}}</th>
             <th>{{this.album}}</th>
             <th>{{this.length}}</th>
@@ -36,5 +36,4 @@ tr:nth-child(even) {
         {{/each}}
     </table>
     {{/if}}
-    <a href="/back2">BACK TO PLAYLISTS</a>
 </section>
