@@ -1,3 +1,4 @@
+    
 /**
  * This is an example of a basic node.js script that performs
  * the Authorization Code oAuth2 flow to authenticate against
@@ -78,7 +79,8 @@ app.get('/login', function(req, res) {
       client_id: client_id,
       scope: scope,
       redirect_uri: redirect_uri,
-      state: state
+      state: state,
+      show_dialog: true
     }));
 });
 
@@ -157,7 +159,21 @@ app.get('/choices', function(req, res) {
 })
 //GETTING PLAYLISTS OF A USER ----------------------------------------------------------------------------------------------------------
 var tracks = [];
-app.get('/playlists', function (req, res) {
+app.get('/playlists', async function (req, res) {
+  let someUser = await userData.get(userID);
+  let userPlaylists = [];
+
+  for(i = 0; i < someUser.listOfPlaylists.length; i++) {
+    let temp = someUser.listOfPlaylists[i];
+    let temp2 = await playlistData.get(temp);
+    let temp3 = {
+      id: temp2._id,
+      title: temp2.title,
+      numOfSongs: temp2.numOfSongs,
+      display_name: someUser.name
+    }
+    userPlaylists.push(temp3);
+  }
 
   spotify
     .request('https://api.spotify.com/v1/users/' + userID + '/playlists')
@@ -180,7 +196,8 @@ app.get('/playlists', function (req, res) {
         simplifiedInfo.push(temp);
       }
     res.render('playlists/spotifyList', {
-      simplifiedInfo: simplifiedInfo
+      simplifiedInfo: simplifiedInfo,
+      userPlaylists: userPlaylists,
     })
   })
   .catch(function(err) {
@@ -218,6 +235,143 @@ app.get('/trackInfo/:id', function(req,res){
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 
+//GETTING TRACKS OF A NON SPOTIFY PLAYLIST----------------------------------------------------------------------------------------------
+var playlistID = null;
+app.get('/trackInfoNonSpotify/:id', async function(req,res){
+  var id = req.params.id;
+  console.log(id);
+  
+  let someUser = await userData.get(userID);
+
+  let temp = someUser.listOfPlaylists[id];
+  playlistID = temp;
+  let playlist = await playlistData.get(temp);
+
+  let songInfo = [];
+  for(i = 0; i < playlist.listOfSongs.length; i++) {
+    let temp2 = {
+      id: playlist.listOfSongs[i].id,
+      title: playlist.listOfSongs[i].title,
+      artist: playlist.listOfSongs[i].artist,
+      album: playlist.listOfSongs[i].album,
+      length: lengthConversion(playlist.listOfSongs[i].length)
+    }
+
+    songInfo.push(temp2);
+  }
+  res.render('playlists/trackInfoNonSpotify', {
+    songInfo: songInfo
+  })
+})
+
+//--------------------------------------------------------------------------------------------------------------------------------------
+
+//ADDING TRACKS TO A NON SPOTIFY PLAYLIST----------------------------------------------------------------------------------------------
+app.get('/addsongs/:id', async function(req,res){
+  var id = req.params.id;
+
+  spotify
+    .request('https://api.spotify.com/v1/playlists/' + id + '/tracks')
+    .then(function(data){
+      let simplifiedInfo = [];
+      for(i = 0; i < data.items.length; i++) {
+        let temp = {
+          id: data.items[i].track.id,
+          name: data.items[i].track.name,
+          artist: data.items[i].track.album.artists[0].name,
+          album: data.items[i].track.album.name,
+          length: lengthConversion(data.items[i].track.duration_ms)
+        };
+
+        simplifiedInfo.push(temp);
+      }
+      res.render('playlists/addsongs', {
+        simplifiedInfo: simplifiedInfo
+      })
+    })
+    .catch(function(err) {
+      console.error('Error occurred: ' + err); 
+    });
+  
+})
+
+//--------------------------------------------------------------------------------------------------------------------------------------
+
+//ADDING TRACKS TO A NON SPOTIFY PLAYLIST----------------------------------------------------------------------------------------------
+app.get('/middleman/:id', async function(req,res){
+  var id = req.params.id;
+  
+  let updatedPlaylist = await playlistData.addSong(id, playlistID);
+  console.log(updatedPlaylist);
+
+  res.redirect('/playlists');
+
+  // spotify
+  //   .request('hhttps://api.spotify.com/v1/tracks/' + id)
+  //   .then(function(data){
+  //     let simplifiedInfo = [];
+  //     for(i = 0; i < data.items.length; i++) {
+  //       let temp = {
+  //         name: data.items[i].track.name,
+  //         artist: data.items[i].track.album.artists[0].name,
+  //         album: data.items[i].track.album.name,
+  //         length: data.items[i].track.duration_ms
+  //       };
+
+  //       simplifiedInfo.push(temp);
+  //     }
+  //     res.render('playlists/addsongs', {
+  //       simplifiedInfo: simplifiedInfo
+  //     })
+  //   })
+  //   .catch(function(err) {
+  //     console.error('Error occurred: ' + err); 
+  //   });
+  
+})
+
+//--------------------------------------------------------------------------------------------------------------------------------------
+
+//CHOOSING PLAYLIST TO ADD SONGS----------------------------------------------------------------------------------------------
+app.get('/between', function(req,res){
+  res.render('playlists/betweenadding');
+
+  // spotify
+  //   .request('hhttps://api.spotify.com/v1/tracks/' + id)
+  //   .then(function(data){
+  //     let simplifiedInfo = [];
+  //     for(i = 0; i < data.items.length; i++) {
+  //       let temp = {
+  //         name: data.items[i].track.name,
+  //         artist: data.items[i].track.album.artists[0].name,
+  //         album: data.items[i].track.album.name,
+  //         length: data.items[i].track.duration_ms
+  //       };
+
+  //       simplifiedInfo.push(temp);
+  //     }
+  //     res.render('playlists/addsongs', {
+  //       simplifiedInfo: simplifiedInfo
+  //     })
+  //   })
+  //   .catch(function(err) {
+  //     console.error('Error occurred: ' + err); 
+  //   });
+  
+})
+
+//--------------------------------------------------------------------------------------------------------------------------------------
+
+//SECTION FOR LITERALLY JUST GOING BACK-------------------------------------------------------------------------------------------------
+app.get('/back2', function(req, res) {
+  res.redirect('/playlists');
+})
+
+app.get('/back3', function(req, res) {
+  res.redirect('/choices');
+})
+//--------------------------------------------------------------------------------------------------------------------------------------
+
 app.get('/create', function(req, res) {
   res.render('playlists/form');
 })
@@ -230,10 +384,7 @@ app.post('/list', async function(req, res) {
   let updatedUser = await userData.addPlaylist(userID, newPlaylist._id);
   console.log(updatedUser);
 
-  res.render('playlists/listedPlaylists', {
-    title: newPlaylist.title,
-    id: newPlaylist._id
-  });
+  res.redirect('/playlists');
 })
 app.get('/refresh_token', function(req, res) {
 
