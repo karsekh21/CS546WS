@@ -2,10 +2,9 @@
   "name": "cs-546-final-project",
   "version": "1.0.0",
   "description": "New Music Finder by Ahsan Shahab and Karun Sekhar",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node app.js"
   },
   "author": "Ahsan Shahab 10407902 and Karun Sekhar 10413883",
   "license": "ISC",
