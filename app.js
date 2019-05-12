@@ -150,18 +150,66 @@ app.get('/choices', function(req, res) {
   res.render('playlists/playlists', {layout: "main"});
 })
 //GETTING PLAYLISTS OF A USER ----------------------------------------------------------------------------------------------------------
-// var playlists = null;
-// app.get('/playlists', function (req, res) {
+var tracks = [];
+app.get('/playlists', function (req, res) {
 
-//   spotify
-//     .request('https://api.spotify.com/v1/users/' + userID + '/playlists')
-//     .then(function(data) {
-//     res.json(data);
-//   })
-//   .catch(function(err) {
-//     console.error('Error occurred: ' + err); 
-//   });
-// })
+  spotify
+    .request('https://api.spotify.com/v1/users/' + userID + '/playlists')
+    .then(function(data) {
+      console.log(data);
+      let simplifiedInfo = [];
+      for(i = 0; i < data.items.length; i++){
+        let temp = {
+          name: data.items[i].name,
+          id: data.items[i].id,
+          owner: {
+            display_name: data.items[i].owner.display_name,
+            id: data.items[i].owner.id
+          },
+          public: data.items[i].public,
+          total_tracks: data.items[i].tracks.total
+        };
+
+        tracks.push(temp.id);
+        simplifiedInfo.push(temp);
+      }
+    res.render('playlists/spotifyList', {
+      simplifiedInfo: simplifiedInfo
+    })
+  })
+  .catch(function(err) {
+    console.error('Error occurred: ' + err); 
+  });
+})
+//--------------------------------------------------------------------------------------------------------------------------------------
+
+//GETTING TRACKS OF A PLAYLIST----------------------------------------------------------------------------------------------------------
+app.get('/trackInfo/:id', function(req,res){
+  var id = req.params.id;
+  
+  spotify
+    .request('https://api.spotify.com/v1/playlists/' + id + '/tracks')
+    .then(function(data){
+      let simplifiedInfo = [];
+      for(i = 0; i < data.items.length; i++) {
+        let temp = {
+          name: data.items[i].track.name,
+          artist: data.items[i].track.album.artists[0].name,
+          album: data.items[i].track.album.name,
+          length: data.items[i].track.duration_ms
+        };
+
+        simplifiedInfo.push(temp);
+      }
+      res.render('playlists/trackInfo', {
+        simplifiedInfo: simplifiedInfo
+      })
+    })
+    .catch(function(err) {
+      console.error('Error occurred: ' + err); 
+    });
+})
+
 //--------------------------------------------------------------------------------------------------------------------------------------
 
 app.get('/create', function(req, res) {
@@ -170,18 +218,14 @@ app.get('/create', function(req, res) {
 
 app.post('/list', async function(req, res) {
   var title = req.body.title;
-  var genre = req.body.genre;
-  var tags = req.body.tags;
 
-  let newPlaylist = await playlistData.create(title, genre, tags);
+  let newPlaylist = await playlistData.create(title);
   console.log(newPlaylist);
   let updatedUser = await userData.addPlaylist(userID, newPlaylist._id);
   console.log(updatedUser);
 
   res.render('playlists/listedPlaylists', {
     title: newPlaylist.title,
-    genre: newPlaylist.genre,
-    tags: newPlaylist.tags,
     id: newPlaylist._id
   });
 })

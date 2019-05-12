@@ -7,25 +7,17 @@ var spotify = new Spotify({
   });
 
 module.exports = {
-    async create(title, genre, tags) {
+    async create(title) {
         if (typeof title !== "string"){
             throw "Please provide a valid name";
-        }
-        if (typeof genre !== "string"){
-            throw "Please provide a valid genre";
-        }
-        if (typeof tags !== "string"){
-            throw "Please provide valid tags";
         }
 
         const playlistCollection = await playlists();
 
         let newPlaylist = {
             title : title,
-            genre : genre,
             numOfSongs: 0,
             lengthEst: 0, //
-            tags: tags,
             listOfSongs: []
         };
 
