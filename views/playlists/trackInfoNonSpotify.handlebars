@@ -14,11 +14,52 @@ td, th {
 tr:nth-child(even) {
   background-color: #dddddd;
 }
+
+#back{
+  text-align: center;
+  padding-left: 38%;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 46px;
+}
+
+#add{
+  text-align: center;
+  padding-left: 45%;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 32px;
+}
+
+/* unvisited link */
+    a:link {
+    color: black;
+    }
+    /* visited link */
+    a:visited {
+    color: black;
+    }
+    /* mouse over link */
+    a:hover {
+    color: teal;
+    }
+    /* selected link */
+    a:active {
+    color: black;
+    }
+    a:link {
+    text-decoration: none;
+    }
+
+h1 {
+  text-align: center;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 50px;
+}
+
 </style>
 
 <section>
     <h1>HERE ARE TRACKS IN PLAYLIST PLS WORK</h1>
-    <a href="/between">Add Songs!</a>
+    <a href="/between" id="add">Add Songs!</a>
     {{#if songInfo}}
     <table>
         <tr>
@@ -37,5 +78,8 @@ tr:nth-child(even) {
         {{/each}}
     </table>
     {{/if}}
-    <a href="/back2">BACK TO PLAYLISTS</a>
+    <br>
+    <br>
+    <br>
+    <a href="/back2" id="back">BACK TO PLAYLISTS</a>
 </section>

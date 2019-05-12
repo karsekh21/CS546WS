@@ -14,10 +14,43 @@ td, th {
 tr:nth-child(even) {
   background-color: #dddddd;
 }
+
+h1 {
+  text-align: center;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 50px;
+}
+
+#back{
+  text-align: center;
+  padding-left: 38%;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 46px;
+}
+
+/* unvisited link */
+    a:link {
+    color: black;
+    }
+    /* visited link */
+    a:visited {
+    color: black;
+    }
+    /* mouse over link */
+    a:hover {
+    color: teal;
+    }
+    /* selected link */
+    a:active {
+    color: black;
+    }
+    a:link {
+    text-decoration: none;
+    }
 </style>
 
 <section>
-    <h1>HERE ARE PLAYLISTS PLS WORK</h1>
+    <h1>HERE ARE YOUR PLAYLISTS!</h1>
     {{#if simplifiedInfo}}
     <table>
         <tr>
@@ -46,5 +79,8 @@ tr:nth-child(even) {
         {{/if}}
     </table>
     {{/if}}
-    <a href="/back3">BACK TO CHOICES</a>
+    <br>
+    <br>
+    <br>
+    <a href="/back3" id="back" class="pls">BACK TO CHOICES</a>
 </section>

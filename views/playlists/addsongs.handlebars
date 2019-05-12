@@ -14,10 +14,36 @@ td, th {
 tr:nth-child(even) {
   background-color: #dddddd;
 }
+
+/* unvisited link */
+    a:link {
+    color: black;
+    }
+    /* visited link */
+    a:visited {
+    color: black;
+    }
+    /* mouse over link */
+    a:hover {
+    color: turquoise;
+    }
+    /* selected link */
+    a:active {
+    color: black;
+    }
+    a:link {
+    text-decoration: none;
+    }
+
+    h1 {
+  text-align: center;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 50px;
+}
 </style>
 
 <section>
-    <h1>HERE ARE SOME SONGS TO ADD MAYBE IF YOU WANT I'M NOT SURE</h1>
+    <h1>SONGS AVAILABLE (UPDATES WEEKLY)</h1>
     {{#if simplifiedInfo}}
     <table>
         <tr>
